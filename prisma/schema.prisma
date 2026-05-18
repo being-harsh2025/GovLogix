@@ -1,0 +1,121 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model LSP {
+  id            String    @id @default(cuid())
+  companyName   String
+  ownerName     String
+  email         String    @unique
+  phone         String
+  gstNumber     String
+  panNumber     String
+  address       String
+  city          String
+  state         String
+  pincode       String
+  vehicleTypes  String    // JSON array
+  capacity      Int
+  status        LSPStatus @default(PENDING)
+  rejectionNote String?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  containers Container[]
+  bookings   Booking[]
+  sentMessages    Message[] @relation("SentMessages")
+  receivedMessages Message[] @relation("ReceivedMessages")
+}
+
+enum LSPStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+model Container {
+  id           String          @id @default(cuid())
+  lspId        String
+  name         String
+  type         ContainerType
+  capacity     Float           // in cubic meters
+  weightLimit  Float           // in kg
+  location     String
+  city         String
+  state        String
+  pricePerDay  Float
+  isAvailable  Boolean         @default(true)
+  description  String?
+  imageUrl     String?
+  createdAt    DateTime        @default(now())
+  updatedAt    DateTime        @updatedAt
+
+  lsp      LSP       @relation(fields: [lspId], references: [id])
+  bookings Booking[]
+}
+
+enum ContainerType {
+  SMALL
+  MEDIUM
+  LARGE
+  REEFER
+  HAZMAT
+}
+
+model Booking {
+  id            String        @id @default(cuid())
+  containerId   String
+  lspId         String
+  bookerName    String
+  bookerEmail   String
+  bookerPhone   String
+  startDate     DateTime
+  endDate       DateTime
+  totalAmount   Float
+  status        BookingStatus @default(PENDING)
+  stripeSession String?
+  paymentStatus PaymentStatus @default(UNPAID)
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+
+  container Container @relation(fields: [containerId], references: [id])
+  lsp       LSP       @relation(fields: [lspId], references: [id])
+}
+
+enum BookingStatus {
+  PENDING
+  CONFIRMED
+  CANCELLED
+  COMPLETED
+}
+
+enum PaymentStatus {
+  UNPAID
+  PAID
+  REFUNDED
+}
+
+model Message {
+  id         String   @id @default(cuid())
+  fromLspId  String
+  toLspId    String
+  content    String
+  isRead     Boolean  @default(false)
+  createdAt  DateTime @default(now())
+
+  from LSP @relation("SentMessages", fields: [fromLspId], references: [id])
+  to   LSP @relation("ReceivedMessages", fields: [toLspId], references: [id])
+}
+
+model AdminUser {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  password  String
+  name      String
+  createdAt DateTime @default(now())
+}

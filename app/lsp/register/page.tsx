@@ -187,6 +187,14 @@ export default function LSPRegisterPage() {
         {error && (
           <div className="alert alert-error" style={{ marginBottom: "1.5rem" }}>
             ⚠ {error}
+            {error.includes("Database credentials") && (
+              <div style={{ marginTop: "0.75rem", fontSize: "0.9rem" }}>
+                <p>🔧 <strong>Setup Required:</strong> The database needs to be configured.</p>
+                <a href="/setup" style={{ color: "var(--blue-light)", fontWeight: 500 }}>
+                  → View Setup Instructions →
+                </a>
+              </div>
+            )}
           </div>
         )}
 

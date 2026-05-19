@@ -2,15 +2,15 @@ import { PrismaClient } from "@prisma/client";
 import { PrismaLibSQL } from "@prisma/adapter-libsql";
 import { createClient } from "@libsql/client";
 
-const globalForPrisma = global as unknown as { prisma: PrismaClient };
+const globalForPrisma = global as unknown as { prisma: PrismaClient | null };
 
-function createPrismaClient() {
+function initPrisma() {
   const url = process.env.TURSO_DATABASE_URL;
   const token = process.env.TURSO_AUTH_TOKEN;
 
   if (!url || !token) {
     throw new Error(
-      "Database credentials not configured. Please set TURSO_DATABASE_URL and TURSO_AUTH_TOKEN environment variables."
+      `Database not configured. URL: ${url ? "✓" : "✗"}, Token: ${token ? "✓" : "✗"}`
     );
   }
 
@@ -24,13 +24,18 @@ function createPrismaClient() {
   } as any);
 }
 
-export const prisma =
-  globalForPrisma.prisma ||
-  new Proxy({} as any, {
-    get: (target, prop) => {
-      if (!globalForPrisma.prisma) {
-        globalForPrisma.prisma = createPrismaClient();
-      }
-      return (globalForPrisma.prisma as any)[prop];
+export function getPrismaClient() {
+  if (!globalForPrisma.prisma) {
+    globalForPrisma.prisma = initPrisma();
+  }
+  return globalForPrisma.prisma;
+}
+
+export const prisma = new Proxy(
+  {},
+  {
+    get(_, prop) {
+      return (getPrismaClient() as any)[prop];
     },
-  });
+  }
+) as PrismaClient;

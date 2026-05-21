@@ -4,7 +4,7 @@ const FROM = "GovLogix <onboarding@resend.dev>";
 
 // All emails are routed to this address until a custom domain is verified on Resend.
 // The actual registrant's email is shown in the subject and body.
-const ADMIN_EMAIL = "harsh.rtx911@gmail.com";
+const ADMIN_EMAIL = "harsh.shrivastav911@gmail.com";
 
 // Lazy initializer — only throws at call time, not at module load/build time
 function getResend() {

@@ -1,5 +1,6 @@
 import { NextRequest } from "next/server";
 import { prisma } from "@/app/lib/prisma";
+import { sendLSPApprovedEmail, sendLSPRejectedEmail } from "@/lib/email";
 
 export async function PATCH(
   request: NextRequest,
@@ -20,6 +21,17 @@ export async function PATCH(
         rejectionNote: status === "REJECTED" ? (rejectionNote || "") : null,
       },
     });
+
+    // Send email notification (non-blocking — don't fail the request if email fails)
+    try {
+      if (status === "APPROVED") {
+        await sendLSPApprovedEmail(lsp.email, lsp.companyName);
+      } else if (status === "REJECTED") {
+        await sendLSPRejectedEmail(lsp.email, lsp.companyName, rejectionNote);
+      }
+    } catch (emailErr) {
+      console.error("[Admin LSP PATCH] Email send failed:", emailErr);
+    }
 
     return Response.json(lsp);
   } catch (err) {

@@ -5,11 +5,12 @@ import { usePathname } from "next/navigation";
 import { useState } from "react";
 
 const navLinks = [
-  { href: "/",            label: "Home"        },
-  { href: "/lsp/register",label: "Register LSP" },
-  { href: "/containers",  label: "Containers"   },
-  { href: "/chat",        label: "Chat"         },
-  { href: "/admin",       label: "Admin Panel"  },
+  { href: "/",               label: "Home"          },
+  { href: "/lsp/register",   label: "Register LSP"  },
+  { href: "/containers",     label: "Containers"    },
+  { href: "/lsp/dashboard",  label: "LSP Dashboard" },
+  { href: "/chat",           label: "Chat"          },
+  { href: "/admin",          label: "Admin Panel"   },
 ];
 
 export default function Navbar() {

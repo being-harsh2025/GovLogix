@@ -1,5 +1,6 @@
 import { NextRequest } from "next/server";
 import { prisma } from "@/app/lib/prisma";
+import { sendLSPRegistrationEmail } from "@/lib/email";
 
 export async function POST(request: NextRequest) {
   try {
@@ -38,6 +39,13 @@ export async function POST(request: NextRequest) {
         status: "PENDING",
       },
     });
+
+    // Send confirmation email (non-blocking)
+    try {
+      await sendLSPRegistrationEmail(email, ownerName, lsp.id);
+    } catch (emailErr) {
+      console.error("[LSP Register] Email send failed:", emailErr);
+    }
 
     return Response.json({ id: lsp.id, message: "Registration submitted successfully" }, { status: 201 });
   } catch (err: unknown) {

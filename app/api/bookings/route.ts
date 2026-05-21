@@ -35,7 +35,7 @@ export async function POST(request: NextRequest) {
     return Response.json(booking, { status: 201 });
   } catch (err) {
     console.error("[Bookings POST]", err);
-    return Response.json({ error: "Internal server error" }, { status: 500 });
+    return Response.json({ error: "Booking failed. Please try again." }, { status: 500 });
   }
 }
 
@@ -50,6 +50,6 @@ export async function GET(request: NextRequest) {
     return Response.json(bookings);
   } catch (err) {
     console.error("[Bookings GET]", err);
-    return Response.json({ error: "Internal server error" }, { status: 500 });
+    return Response.json({ error: "Could not load bookings." }, { status: 500 });
   }
 }

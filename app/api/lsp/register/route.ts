@@ -3,6 +3,15 @@ import { prisma } from "@/app/lib/prisma";
 import { sendLSPRegistrationEmail } from "@/lib/email";
 
 export async function POST(request: NextRequest) {
+  // Guard: check DB env vars before touching Prisma
+  if (!process.env.TURSO_DATABASE_URL || !process.env.TURSO_AUTH_TOKEN) {
+    console.error("[LSP Register] Missing TURSO_DATABASE_URL or TURSO_AUTH_TOKEN");
+    return Response.json(
+      { error: "Service temporarily unavailable. Please try again later." },
+      { status: 503 }
+    );
+  }
+
   try {
     const body = await request.json();
     const {
@@ -50,7 +59,8 @@ export async function POST(request: NextRequest) {
     return Response.json({ id: lsp.id, message: "Registration submitted successfully" }, { status: 201 });
   } catch (err: unknown) {
     console.error("[LSP Register]", err);
-    return Response.json({ error: err instanceof Error ? err.message : "Internal server error" }, { status: 500 });
+    // Never expose raw Prisma/DB errors to the client
+    return Response.json({ error: "Registration failed. Please try again." }, { status: 500 });
   }
 }
 

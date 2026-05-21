@@ -194,7 +194,13 @@ export default function LSPRegisterPage() {
         setRefId(data.id);
         setSuccess(true);
       } catch (err: unknown) {
-        setError(err instanceof Error ? err.message : "Something went wrong");
+        const msg = err instanceof Error ? err.message : "Something went wrong";
+        // Never show raw DB/internal errors to the user
+        setError(
+          msg.includes("Database not configured") || msg.includes("URL_INVALID") || msg.includes("TURSO")
+            ? "Service temporarily unavailable. Please try again later."
+            : msg
+        );
       }
     });
   };

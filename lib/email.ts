@@ -1,19 +1,19 @@
 import { Resend } from "resend";
 
-const resend = new Resend(process.env.RESEND_API_KEY);
-
 const FROM = "GovLogix <onboarding@resend.dev>";
 
-// Log at module load time so we can see in server console if key is missing
-if (!process.env.RESEND_API_KEY) {
-  console.error("⚠️  [Email] RESEND_API_KEY is not set — emails will not be sent.");
-} else {
-  console.log("✅ [Email] Resend initialized with API key.");
+// Lazy initializer — only throws at call time, not at module load/build time
+function getResend() {
+  const key = process.env.RESEND_API_KEY;
+  if (!key) {
+    throw new Error("RESEND_API_KEY is not set in environment variables.");
+  }
+  return new Resend(key);
 }
 
 /* ── LSP Registration Confirmation ── */
 export async function sendLSPRegistrationEmail(to: string, name: string, refId: string) {
-  return resend.emails.send({
+  return getResend().emails.send({
     from: FROM,
     to,
     subject: "✅ LSP Application Submitted — GovLogix",
@@ -47,7 +47,7 @@ export async function sendLSPRegistrationEmail(to: string, name: string, refId: 
 
 /* ── LSP Approved ── */
 export async function sendLSPApprovedEmail(to: string, companyName: string) {
-  return resend.emails.send({
+  return getResend().emails.send({
     from: FROM,
     to,
     subject: "🎉 Your LSP Application is Approved — GovLogix",
@@ -72,7 +72,7 @@ export async function sendLSPApprovedEmail(to: string, companyName: string) {
           </ul>
         </div>
         <div style="text-align:center;margin-top:24px;">
-          <a href="https://govlogix.in/lsp/dashboard" style="display:inline-block;background:#1a56db;color:#fff;padding:12px 28px;border-radius:8px;font-weight:600;text-decoration:none;">
+          <a href="https://govlogix.vercel.app/lsp/dashboard" style="display:inline-block;background:#1a56db;color:#fff;padding:12px 28px;border-radius:8px;font-weight:600;text-decoration:none;">
             Go to LSP Dashboard →
           </a>
         </div>
@@ -88,7 +88,7 @@ export async function sendLSPApprovedEmail(to: string, companyName: string) {
 
 /* ── LSP Rejected ── */
 export async function sendLSPRejectedEmail(to: string, companyName: string, reason?: string) {
-  return resend.emails.send({
+  return getResend().emails.send({
     from: FROM,
     to,
     subject: "❌ LSP Application Update — GovLogix",
@@ -121,7 +121,7 @@ export async function sendLSPRejectedEmail(to: string, companyName: string, reas
   });
 }
 
-/* ── Booking Confirmation (for container bookers) ── */
+/* ── Booking Confirmation ── */
 export async function sendBookingConfirmationEmail(
   to: string,
   bookerName: string,
@@ -135,7 +135,7 @@ export async function sendBookingConfirmationEmail(
   const fmt = (d: string) =>
     new Date(d).toLocaleDateString("en-IN", { day: "2-digit", month: "long", year: "numeric" });
 
-  return resend.emails.send({
+  return getResend().emails.send({
     from: FROM,
     to,
     subject: "📦 Booking Confirmed — GovLogix",
